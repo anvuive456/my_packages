@@ -1,10 +1,11 @@
 # my_packages
 
-A Flutter utility package providing two core building blocks for robust, scalable Flutter applications:
+A Flutter utility package providing core building blocks for robust, scalable Flutter applications:
 
 - **`Option<T>`** — a type-safe alternative to `null` for representing optional values.
 - **`Result<T>`** — a type-safe alternative to `try/catch` for representing success or failure.
 - **`BaseController` / `ControllerBuilder`** — a lightweight, `ChangeNotifier`-based state management solution.
+- **Form Builder** — a reactive, type-safe form management system inspired by Reactive Forms, without the overhead.
 
 ---
 
@@ -25,6 +26,14 @@ A Flutter utility package providing two core building blocks for robust, scalabl
 - `ControllerBuilder<C, S>` — a widget that creates, owns, and disposes the controller, then rebuilds on state changes.
 - `ControllerScope<C, S>` — an `InheritedNotifier` that exposes the controller to any descendant widget.
 - Optional `listener` callback for side effects (navigation, snackbars, dialogs) without triggering a rebuild.
+
+### Form Builder
+- `FormControl<T>` — holds a single typed value with optional validators.
+- `TextFormControl` — extends `TextEditingController`, usable directly as a `TextField` controller.
+- `FormGroup` — a named map of controls; supports dot-notation path access (`address.city`, `tags.0`).
+- `FormArray<T>` — a dynamic list of controls; supports adding/removing at runtime.
+- `FormBuilder` — a widget that binds a `FormGroup` to its subtree via `InheritedNotifier`, rebuilding on any change.
+- `Validators` — built-in validators: `required`, `minLength`, `maxLength`, `pattern`, `email`, `compose`.
 
 ---
 
@@ -155,6 +164,92 @@ final controller = ControllerScope.of<CounterController, CounterState>(context);
 controller.increment();
 ```
 
+### Form Builder
+
+**Define a form outside the widget (in `State` or your state management layer):**
+
+```dart
+final form = FormGroup({
+  'username': TextFormControl(
+    value: '',
+    validators: [Validators.required(), Validators.minLength(3)],
+  ),
+  'email': TextFormControl(
+    value: '',
+    validators: [Validators.required(), Validators.email()],
+  ),
+  'age': FormControl<int>(validators: [Validators.required()]),
+  'address': FormGroup({
+    'city': TextFormControl(value: ''),
+  }),
+  'tags': FormArray<String>([
+    TextFormControl(value: 'flutter'),
+  ]),
+});
+```
+
+**Bind to the widget tree with `FormBuilder`:**
+
+```dart
+FormBuilder(
+  form: form,
+  builder: (context, form) => Column(children: [
+    // TextFormControl used directly as a TextField controller — no onChanged needed
+    TextField(controller: form.text('username')),
+
+    // Nested FormGroup via dot-notation
+    TextField(controller: form.text('address.city')),
+
+    // Validation errors
+    if (form.text('email').isTouched)
+      Text(form.text('email').errors.join(', ')),
+
+    ElevatedButton(
+      onPressed: form.isValid ? _submit : null,
+      child: const Text('Submit'),
+    ),
+  ]),
+)
+```
+
+**Dynamic lists with `FormArray`:**
+
+```dart
+FormBuilder(
+  form: form,
+  builder: (context, form) {
+    final todos = form.array('todos');
+    return ListView.builder(
+      itemCount: todos.length,
+      itemBuilder: (context, i) {
+        final todo = todos.groupAt(i);
+        // Nest FormBuilder per item — each item rebuilds independently
+        return FormBuilder(
+          form: todo,
+          builder: (context, form) => ListTile(
+            leading: Checkbox(
+              value: form.get<bool>('done'),
+              onChanged: (v) => form.set('done', v == true),
+            ),
+            title: TextField(controller: form.text('title')),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () => todos.removeAt(i),
+            ),
+          ),
+        );
+      },
+    );
+  },
+)
+```
+
+**Reset the entire form:**
+
+```dart
+form.reset();  // clears all values, dirty, and touched state
+```
+
 ---
 
 ## API Reference
@@ -209,6 +304,87 @@ controller.increment();
 | `controllerFactory` | Factory called once to create the controller. |
 | `builder` | Rebuilds on every state change. |
 | `listener` | Optional side-effect callback on state change. |
+
+### Form Builder
+
+#### `AbstractControl<T>`
+
+| Member | Description |
+|---|---|
+| `formValue` | The typed form value of this control. |
+| `isValid` | `true` if all validators pass. |
+| `isDirty` | `true` if the value has changed since init/reset. |
+| `isTouched` | `true` if `markAsTouched()` has been called. |
+| `errors` | List of validation error messages. |
+| `reset()` | Resets value, dirty, and touched state. |
+
+#### `FormControl<T>`
+
+| Member | Description |
+|---|---|
+| `FormControl({value, validators})` | Creates a typed control. |
+| `formValue` | Current value as `T?`. |
+| `value =` | Sets the value, marks dirty, notifies listeners. |
+| `markAsTouched()` | Marks the control as touched. |
+| `reset({value})` | Resets to optional value, clears dirty/touched. |
+
+#### `TextFormControl`
+
+Extends `TextEditingController` — pass directly as `controller` to `TextField` or `TextFormField`. No `onChanged` needed.
+
+| Member | Description |
+|---|---|
+| `TextFormControl({value, validators})` | Creates a text control. |
+| `formValue` | Current text as `String`. |
+| `markAsTouched()` | Marks the control as touched. |
+| `reset()` | Clears text, dirty, and touched state. |
+
+#### `FormGroup`
+
+| Member | Description |
+|---|---|
+| `FormGroup(controls)` | Creates a group from a named map of controls. |
+| `get<T>(path)` | Reads a value by dot-notation path. |
+| `set<T>(path, value)` | Writes a value by dot-notation path. |
+| `control(name)` | Returns a direct child `AbstractControl`. |
+| `text(name)` | Returns a direct child `TextFormControl`. |
+| `group(name)` | Returns a direct child `FormGroup`. |
+| `array(name)` | Returns a direct child `FormArray`. |
+| `form<T>(name)` | Returns a direct child `FormControl<T>`. |
+| `formValue` | Snapshot of all values as `Map<String, dynamic>`. |
+| `isValid` | `true` if all descendant controls are valid. |
+| `reset()` | Resets all descendant controls. |
+
+#### `FormArray<T>`
+
+| Member | Description |
+|---|---|
+| `FormArray(controls)` | Creates an array from an initial list. |
+| `length` | Number of controls. |
+| `getAt(index)` | Returns the value at `index` as `T?`. |
+| `groupAt(index)` | Returns the `FormGroup` at `index`. |
+| `controlAt(index)` | Returns the `AbstractControl` at `index`. |
+| `add(control)` | Appends a control and notifies listeners. |
+| `removeAt(index)` | Removes a control and notifies listeners. |
+| `reset()` | Resets all controls. |
+
+#### `FormBuilder`
+
+| Parameter | Description |
+|---|---|
+| `form` | The `FormGroup` to bind. |
+| `builder` | Called with `(context, FormGroup)` on every change. |
+
+#### `Validators`
+
+| Validator | Description |
+|---|---|
+| `Validators.required()` | Fails if value is `null` or empty string. |
+| `Validators.minLength(n)` | Fails if string length < `n`. |
+| `Validators.maxLength(n)` | Fails if string length > `n`. |
+| `Validators.pattern(regex)` | Fails if string does not match `regex`. |
+| `Validators.email()` | Fails if string is not a valid email. |
+| `Validators.compose(validators)` | Runs validators in order, returns first error. |
 
 ---
 
