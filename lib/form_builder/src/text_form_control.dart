@@ -24,10 +24,11 @@ import 'form_control.dart';
 ///   controller: form.text('email'),
 /// )
 /// ```
-class TextFormControl extends TextEditingController implements AbstractControl<String> {
+class TextFormControl extends TextEditingController
+    implements AbstractControl<String> {
   /// Creates a [TextFormControl] with an optional initial [value] and [validators].
   TextFormControl({String? value, this.validators = const []})
-      : super(text: value ?? '');
+    : super(text: value ?? '');
 
   /// The list of validators applied to this control's text value.
   final List<Validator<String>> validators;
@@ -69,11 +70,12 @@ class TextFormControl extends TextEditingController implements AbstractControl<S
     notifyListeners();
   }
 
+  @override
   /// Resets the text to [value] and clears dirty and touched state.
-  void reset({String? value}) {
+  void reset() {
     // Set flags before super.value to ensure correct state during notification.
     _isDirty = false;
     _isTouched = false;
-    super.value = TextEditingValue(text: value ?? '');
+    super.value = TextEditingValue();
   }
 }

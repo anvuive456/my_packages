@@ -19,7 +19,8 @@ class FormArray<T> extends ChangeNotifier implements AbstractControl<List<T?>> {
   /// Creates a [FormArray] from an initial list of controls.
   FormArray(List<AbstractControl> controls) : _controls = List.of(controls) {
     for (final c in _controls) {
-      if (c is ChangeNotifier) (c as ChangeNotifier).addListener(notifyListeners);
+      if (c is ChangeNotifier)
+        (c as ChangeNotifier).addListener(notifyListeners);
     }
   }
 
@@ -36,7 +37,8 @@ class FormArray<T> extends ChangeNotifier implements AbstractControl<List<T?>> {
   /// Throws if the control at [index] is not a [FormGroup].
   FormGroup groupAt(int index) {
     final c = _controls[index];
-    if (c is! FormGroup) throw ArgumentError('Control at index $index is not a FormGroup');
+    if (c is! FormGroup)
+      throw ArgumentError('Control at index $index is not a FormGroup');
     return c;
   }
 
@@ -46,14 +48,16 @@ class FormArray<T> extends ChangeNotifier implements AbstractControl<List<T?>> {
   /// Appends [control] to the array.
   void add(AbstractControl control) {
     _controls.add(control);
-    if (control is ChangeNotifier) (control as ChangeNotifier).addListener(notifyListeners);
+    if (control is ChangeNotifier)
+      (control as ChangeNotifier).addListener(notifyListeners);
     notifyListeners();
   }
 
   /// Removes the control at [index].
   void removeAt(int index) {
     final control = _controls.removeAt(index);
-    if (control is ChangeNotifier) (control as ChangeNotifier).removeListener(notifyListeners);
+    if (control is ChangeNotifier)
+      (control as ChangeNotifier).removeListener(notifyListeners);
     notifyListeners();
   }
 
@@ -98,6 +102,7 @@ class FormArray<T> extends ChangeNotifier implements AbstractControl<List<T?>> {
   }
 
   /// Resets all child controls to their initial values.
+  @override
   void reset() {
     for (final c in _controls) {
       if (c is FormControl) c.reset();

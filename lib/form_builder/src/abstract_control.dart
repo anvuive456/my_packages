@@ -14,4 +14,7 @@ abstract class AbstractControl<T> {
 
   /// The list of validation error messages for this control.
   List<String> get errors;
+
+  /// Resets the control to its initial state.
+  void reset();
 }

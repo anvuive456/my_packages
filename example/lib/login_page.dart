@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:my_packages/my_packages.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,12 +19,17 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _form = FormGroup({
+      'image': FormControl<File>(),
       'username': TextFormControl(
         value: '',
         validators: [
           Validators.required(),
           Validators.minLength(3, message: 'At least 3 characters'),
         ],
+      ),
+      'email': TextFormControl(
+        value: '',
+        validators: [Validators.required(), Validators.email()],
       ),
       'password': TextFormControl(
         value: '',
@@ -39,11 +47,11 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     setState(() => _submitted = true);
     if (!_form.isValid) return;
 
-    showDialog<void>(
+    await showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Login'),
@@ -56,6 +64,9 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
+
+    _form.reset();
+    setState(() => _submitted = false);
   }
 
   @override
@@ -68,16 +79,28 @@ class _LoginPageState extends State<LoginPage> {
           form: _form,
           builder: (context, form) {
             final username = form.text('username');
+            final email = form.text('email');
             final password = form.text('password');
+            final file = form.form<File>('image');
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _FileField(file: file.formValue, onPick: (v) => file.value = v),
                 _FormField(
                   label: 'Username',
                   controller: username,
                   onBlur: username.markAsTouched,
-                  errors: _submitted || username.isTouched ? username.errors : [],
+                  errors: _submitted || username.isTouched
+                      ? username.errors
+                      : [],
+                ),
+                const SizedBox(height: 16),
+                _FormField(
+                  label: 'Email',
+                  controller: email,
+                  onBlur: email.markAsTouched,
+                  errors: _submitted || email.isTouched ? email.errors : [],
                 ),
                 const SizedBox(height: 16),
                 _FormField(
@@ -85,7 +108,9 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   controller: password,
                   onBlur: password.markAsTouched,
-                  errors: _submitted || password.isTouched ? password.errors : [],
+                  errors: _submitted || password.isTouched
+                      ? password.errors
+                      : [],
                 ),
                 const SizedBox(height: 32),
                 FilledButton(
@@ -98,6 +123,27 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+}
+
+class _FileField extends StatelessWidget {
+  final File? file;
+  final ValueChanged<File?> onPick;
+  const _FileField({super.key, this.file, required this.onPick});
+
+  void _pickFile() async {
+    final result = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (result != null) {
+      onPick(File.fromUri(Uri.parse(result.path)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (file == null) {
+      return ElevatedButton(onPressed: _pickFile, child: const Text('Upload'));
+    }
+    return SizedBox(height: 300, child: Image.file(file!, fit: BoxFit.cover));
   }
 }
 
@@ -128,7 +174,7 @@ class _FormField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
-          errorText: errors.isNotEmpty ? errors.first : null,
+          errorText: errors.isNotEmpty ? errors.join(', ') : null,
         ),
       ),
     );

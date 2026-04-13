@@ -51,4 +51,16 @@ abstract class Validators {
       return null;
     };
   }
+
+  /// Fails if the value is not a valid email address.
+  static Validator<String> email({String message = 'Invalid email'}) {
+    return (value) {
+      final regex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+
+      if (value == null || !regex.hasMatch(value)) {
+        return message;
+      }
+      return null;
+    };
+  }
 }

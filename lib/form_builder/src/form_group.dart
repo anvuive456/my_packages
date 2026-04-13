@@ -19,7 +19,8 @@ import 'text_form_control.dart';
 ///   }),
 /// });
 /// ```
-class FormGroup extends ChangeNotifier implements AbstractControl<Map<String, dynamic>> {
+class FormGroup extends ChangeNotifier
+    implements AbstractControl<Map<String, dynamic>> {
   /// Creates a [FormGroup] from a map of named controls.
   FormGroup(Map<String, AbstractControl> controls)
     : _controls = Map.unmodifiable(controls) {
@@ -137,10 +138,10 @@ class FormGroup extends ChangeNotifier implements AbstractControl<Map<String, dy
   /// Returns the [FormControl] child at [name] with a [String] value.
   ///
   /// Throws if the control is not a [FormControl<String>].
-  FormControl<String> form(String s) {
+  FormControl<T> form<T>(String s) {
     final c = control(s);
-    if (c is! FormControl<String>) {
-      throw ArgumentError('Control "$s" is not a FormControl<String>');
+    if (c is! FormControl<T>) {
+      throw ArgumentError('Control "$s" is not a FormControl<$T>');
     }
     return c;
   }
@@ -156,12 +157,11 @@ class FormGroup extends ChangeNotifier implements AbstractControl<Map<String, dy
     return c;
   }
 
+  @override
   /// Resets all child controls to their initial values.
   void reset() {
     for (final c in _controls.values) {
-      if (c is FormControl) c.reset();
-      if (c is FormGroup) c.reset();
-      if (c is FormArray) c.reset();
+      c.reset();
     }
   }
 
