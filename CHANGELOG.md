@@ -1,3 +1,9 @@
+## 0.1.2
+
+### Added — Utils
+
+- `logger` — global `Logger` instance with `PrettyPrinter`; re-exported from the top-level `my_packages` library.
+
 ## 0.1.1
 
 ### Changed — State Management
