@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'login_page.dart';
+import 'shared_counter_page.dart';
 import 'todo_page.dart';
 
 void main() {
@@ -47,6 +48,17 @@ class _HomePage extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const TodoPage()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _ExampleTile(
+            icon: Icons.share,
+            title: 'Shared Controller',
+            subtitle: '2 widget dùng chung 1 controller',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                  builder: (_) => const SharedCounterPage()),
             ),
           ),
         ],

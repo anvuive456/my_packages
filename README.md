@@ -133,9 +133,11 @@ class CounterController extends BaseController<CounterState> {
 
 **Use in the widget tree:**
 
+Use `ControllerBuilder.disposable` when the widget owns the controller lifecycle:
+
 ```dart
-ControllerBuilder<CounterController, CounterState>(
-  controllerFactory: () => CounterController(),
+ControllerBuilder.disposable<CounterController, CounterState>(
+  controllerFactory: CounterController.new,
   listener: (state) {
     if (state.count == 10) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -154,6 +156,15 @@ ControllerBuilder<CounterController, CounterState>(
       ],
     );
   },
+);
+```
+
+Use the default constructor when the controller is managed externally (e.g. via `get_it`):
+
+```dart
+ControllerBuilder<CounterController, CounterState>(
+  controllerFactory: () => getIt<CounterController>(),
+  builder: (context, state, controller) => Text('Count: ${state.count}'),
 );
 ```
 
@@ -298,6 +309,11 @@ form.reset();  // clears all values, dirty, and touched state
 | `onInit()` | Lifecycle hook called once after construction. |
 
 ### `ControllerBuilder<C, S>`
+
+| Constructor | Description |
+|---|---|
+| `ControllerBuilder(...)` | Accepts an external controller — does **not** dispose it. Use with DI containers. |
+| `ControllerBuilder.disposable(...)` | Creates and owns the controller — disposes it when removed from the tree. |
 
 | Parameter | Description |
 |---|---|

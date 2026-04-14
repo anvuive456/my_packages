@@ -87,6 +87,9 @@ class ControllerBuilder<C extends StateController<S>, S>
   /// should not trigger a rebuild.
   final StateListener<S>? listener;
 
+  /// Whether to dispose the controller when the widget is removed from the tree.
+  final bool dispose;
+
   /// Creates a [ControllerBuilder].
   ///
   /// [controllerFactory] and [builder] are required.
@@ -96,7 +99,19 @@ class ControllerBuilder<C extends StateController<S>, S>
     required this.controllerFactory,
     required this.builder,
     this.listener,
-  });
+  }) : dispose = false;
+
+  /// Creates a [ControllerBuilder] that disposes
+  /// the controller when the widget is removed from the tree.
+  ///
+  /// If you don't need the controller to be disposed,
+  /// use [ControllerBuilder] instead.
+  const ControllerBuilder.disposable({
+    super.key,
+    required this.controllerFactory,
+    required this.builder,
+    this.listener,
+  }) : dispose = true;
 
   @override
   State<ControllerBuilder<C, S>> createState() =>
@@ -122,6 +137,9 @@ class _ControllerBuilderState<C extends StateController<S>, S>
   @override
   void dispose() {
     _controller.removeListener(_onStateChanged);
+    if (widget.dispose) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 

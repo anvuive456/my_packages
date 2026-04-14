@@ -1,3 +1,10 @@
+## 0.1.1
+
+### Changed — State Management
+
+- `ControllerBuilder` default constructor now takes an external controller (no dispose) — safe for use with DI containers like `get_it`.
+- Added `ControllerBuilder.disposable` named constructor for controllers created and owned by the widget; automatically disposes the controller when removed from the tree.
+
 ## 0.1.0
 
 ### Added — Form Builder

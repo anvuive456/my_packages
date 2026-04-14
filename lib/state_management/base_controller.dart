@@ -47,11 +47,11 @@ base class StateController<T> extends ChangeNotifier {
   /// ```dart
   /// controller.updateState((current) => current.copyWith(count: current.count + 1));
   /// ```
+  @Deprecated('Use `state = updated` instead')
   void updateState(T Function(T currentState) update) {
     final updated = update(_state);
     if (_isSameState(updated)) return;
-    _state = updated;
-    notifyListeners();
+    state = updated;
   }
 
   /// Returns true if [newState] is identical to the current [_state].
