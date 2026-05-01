@@ -4,7 +4,9 @@
       "Bash(dart analyze:*)",
       "Bash(grep -v \"^$\")",
       "Bash(git add:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "Bash(git commit --amend -m ':*)",
+      "Bash(git push:*)"
     ]
   }
 }
