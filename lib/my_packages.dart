@@ -5,3 +5,5 @@ export 'utils/utils.dart';
 export 'ui/ui.dart';
 export 'storage/index.dart';
 export 'package:go_router/go_router.dart';
+export 'package:my_packages/network/network_provider.dart';
+export 'package:my_packages/network/http_provider.dart';
