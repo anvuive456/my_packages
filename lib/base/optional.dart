@@ -33,6 +33,14 @@ sealed class Option<T> {
   /// ```
   const factory Option.none() = None;
 
+  /// Returns an Option containing the given [value], or [None] if [value] is null.
+  ///
+  /// ```dart
+  /// Option.fromNullable('An'); // Some(An)
+  /// Option.fromNullable(null); // None
+  /// ```
+  factory Option.fromNullable(T? value) => value == null ? None() : Some(value);
+
   /// Returns true if this Option contains a value.
   ///
   /// ```dart
